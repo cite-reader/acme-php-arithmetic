@@ -25,9 +25,10 @@ their arrays.
 
 Anyway, PHP strings are interesting. For reasons of history, these aren't
 Unicode codepoint sequences, but rather run-length-encoded byte arrays. So we
-need an import:
+need a couple imports (the second so we can later turn things into strings):
 
 > import qualified Data.ByteString as B
+> import Data.ByteString.Char8 (pack)
 
 With that available to us, we can roll the interesting subset of PHP values
 into a single sum type:
@@ -64,7 +65,7 @@ Let's just get this over with:
 > toBool (PBool x) = PBool x
 > toBool (PInt x) = PBool (x /= 0)
 > toBool (PFloat x) = PBool (x /= 0.0)
-> toBool (PString x) = PBool (x /= (B.pack []) && x /= (B.pack [48]))
+> toBool (PString x) = PBool (x /= (pack "") && x /= (pack "0"))
 > toBool PNull = PBool False
 
 > toInt :: PVal -> PVal
@@ -78,6 +79,13 @@ Let's just get this over with:
 > toFloat (PString x) = PFloat undefined -- TODO
 > toFloat (PInt x) = PFloat (fromIntegral x)
 > toFloat x = toFloat (toInt x)
+
+> toString :: PVal -> PVal
+> toString (PBool False) = PString (pack "")
+> toString (PBool True) = PString (pack "1")
+> toString (PInt x) = PString (pack . show $ x)
+> toString (PFloat x) = PString (pack . show $ x)
+> toString (PString x) = PString x
 
 `pnot` is short for "PHP not". It would be nice to have prefix-`!` for this, but
 I don't think that's possible.
