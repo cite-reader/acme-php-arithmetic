@@ -68,8 +68,8 @@ Let's just get this over with:
 > toBool PNull = PBool False
 
 > toInt :: PVal -> PVal
-> toInt (PBool Hask.False) = PInt 0
-> toInt (PBool Hask.True) = PInt 1
+> toInt (PBool False) = PInt 0
+> toInt (PBool True) = PInt 1
 > toInt (PInt x) = PInt x
 > toInt (PFloat x) = PInt (truncate x)
 > toInt (PString x) = PInt undefined -- TODO
