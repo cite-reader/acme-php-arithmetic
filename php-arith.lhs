@@ -50,7 +50,7 @@ enough to implement:
 > PString a === PString b = PBool ((Hask.==) a b)
 > PNull === PNull = PBool Hask.True
 > _ === _ = PBool Hask.False
->
+
 > (!==) :: PVal -> PVal -> PVal
 > a !== b = not (a === b)
 
