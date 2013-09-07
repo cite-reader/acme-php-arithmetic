@@ -8,14 +8,11 @@ static typing. So what is the situation in a humane static language?
 Let's find out.
 
 > module Acme.PHP.Arithmetic where
-> import qualified Prelude as Hask
-> import Prelude (undefined)
 
 That's right. We're going to take the arithmetic semantics of PHP, the most
 insane of the dynlangs, and embed them in Haskell, the most aggressively pure
 static language in common use.
 
-(I've imported the Prelude qualified so it's clear what comes from where.)
 
 And I'm going to put it in the Acme namespace because GOOD GOD this is a bad
 idea.
@@ -36,25 +33,25 @@ need an import:
 With that available to us, we can roll the interesting subset of PHP values
 into a single sum type:
 
-> data PVal = PBool Hask.Bool | PInt Hask.Int | PFloat Hask.Float |
->             PString B.ByteString | PNull deriving (Hask.Show)
+> data PVal = PBool Bool | PInt Int | PFloat Float |
+>             PString B.ByteString | PNull deriving (Show)
 
 Let's start with the most basic of operations: equality testing. PHP has a
 notion of so-called "strict equality" using the operator `(===)`, which is easy
 enough to implement:
 
 > (===) :: PVal -> PVal -> PVal
-> PBool a === PBool b = PBool ((Hask.==) a b)
-> PInt a === PInt b = PBool ((Hask.==) a b)
-> PFloat a === PFloat b = PBool ((Hask.==) a b)
-> PString a === PString b = PBool ((Hask.==) a b)
-> PNull === PNull = PBool Hask.True
-> _ === _ = PBool Hask.False
+> PBool a === PBool b = PBool (a == b)
+> PInt a === PInt b = PBool (a == b)
+> PFloat a === PFloat b = PBool (a == b)
+> PString a === PString b = PBool (a == b)
+> PNull === PNull = PBool True
+> _ === _ = PBool False
 
 > (!==) :: PVal -> PVal -> PVal
-> a !== b = not (a === b)
+> a !== b = pnot (a === b)
 
-We'll get to `not` later.
+We'll get to `pnot` later.
 
 There's also loose eqality with the `==` operator. There's a table at
 <http://us2.php.net/manual/en/language.operators.comparison.php> which explains
@@ -63,23 +60,26 @@ Let's just get this over with:
 
 > toBool :: PVal -> PVal
 > toBool (PBool x) = PBool x
-> toBool (PInt x) = PBool (x Hask./= 0)
-> toBool (PFloat x) = PBool (x Hask./= 0.0)
-> toBool (PString x) = PBool (x Hask./= (B.pack []) Hask.&& x Hask./= (B.pack [48]))
-> toBool PNull = PBool Hask.False
+> toBool (PInt x) = PBool (x /= 0)
+> toBool (PFloat x) = PBool (x /= 0.0)
+> toBool (PString x) = PBool (x /= (B.pack []) && x /= (B.pack [48]))
+> toBool PNull = PBool False
 
 > toInt :: PVal -> PVal
 > toInt (PBool Hask.False) = PInt 0
 > toInt (PBool Hask.True) = PInt 1
 > toInt (PInt x) = PInt x
-> toInt (PFloat x) = PInt (Hask.truncate x)
+> toInt (PFloat x) = PInt (truncate x)
 > toInt (PString x) = PInt undefined -- TODO
 
 > toFloat :: PVal -> PVal
 > toFloat (PString x) = PFloat undefined -- TODO
-> toFloat (PInt x) = PFloat (Hask.fromIntegral x)
+> toFloat (PInt x) = PFloat (fromIntegral x)
 > toFloat x = toFloat (toInt x)
 
-> not :: PVal -> PVal
-> not (PBool b) = PBool (Hask.not b)
-> not b = not (toBool b)
+`pnot` is short for "PHP not". It would be nice to have prefix-`!` for this, but
+I don't think that's possible.
+
+> pnot :: PVal -> PVal
+> pnot (PBool b) = PBool (not b)
+> pnot b = pnot (toBool b)
