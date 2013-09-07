@@ -13,8 +13,7 @@ That's right. We're going to take the arithmetic semantics of PHP, the most
 insane of the dynlangs, and embed them in Haskell, the most aggressively pure
 static language in common use.
 
-
-And I'm going to put it in the Acme namespace because GOOD GOD this is a bad
+And I'm going to put it in the Acme namespace because *good God* this is a bad
 idea.
 
 
@@ -35,6 +34,9 @@ into a single sum type:
 
 > data PVal = PBool Bool | PInt Int | PFloat Float |
 >             PString B.ByteString | PNull deriving (Show)
+
+(Potential future work: define a custom `Show` instance that mimics the PHP
+`var_dump` function.)
 
 Let's start with the most basic of operations: equality testing. PHP has a
 notion of so-called "strict equality" using the operator `(===)`, which is easy
