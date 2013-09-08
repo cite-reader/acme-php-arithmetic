@@ -33,7 +33,7 @@ need a couple imports (the second so we can later turn things into strings):
 With that available to us, we can roll the interesting subset of PHP values
 into a single sum type:
 
-> data PVal = PBool Bool | PInt Int | PFloat Float |
+> data PVal = PBool Bool | PInt Int | PFloat Double |
 >             PString B.ByteString | PNull deriving (Show)
 
 (Potential future work: define a custom `Show` instance that mimics the PHP
