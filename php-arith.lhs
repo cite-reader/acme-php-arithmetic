@@ -68,6 +68,9 @@ Let's just get this over with:
 > toBool (PString x) = PBool (x /= (pack "") && x /= (pack "0"))
 > toBool PNull = PBool False
 
+That really is the rule for strings, by the way: `(bool) "0"` is `false`, but
+`(bool) "00"` is `true`. Okay, back to juggling:
+
 > toInt :: PVal -> PVal
 > toInt (PBool False) = PInt 0
 > toInt (PBool True) = PInt 1
@@ -82,12 +85,27 @@ Let's just get this over with:
 > toFloat x = toFloat (toInt x)
 
 > toString :: PVal -> PVal
-> toString (PBool False) = PString (pack "")
-> toString (PBool True) = PString (pack "1")
+> toString (PBool False) = PString (pack "") -- ORLY?
+> toString (PBool True) = PString (pack "1") -- YARLY
 > toString (PInt x) = PString (pack . show $ x)
 > toString (PFloat x) = PString (pack . show $ x)
 > toString (PString x) = PString x
 > toString PNull = PString (pack "")
+
+Now that we can juggle types, are we ready to implement `(==)` for `PVal`s?
+Nope. Because when we're comparing two strings, we might have to juggle them
+both to numbers. When both are "numeric" strings, each is converted to a number:
+an integer if it will fit, a float if it won't, *unless* "both overflow and
+appear equal numerically." I have no idea what that actually means, so I guess
+I'm going to go read some C at some point.
+
+Also, what is considered a "numeric" string is somewhat difficult. The manual
+at
+<http://us2.php.net/manual/en/language.types.string.php#language.types.string.conversion>
+claims that "Valid numeric data is an optional sign, followed by one or more
+digits (optionally containing a decimal point), followed by an optional
+exponent. The exponent is an 'e' or 'E' followed by one or more digits." This
+is a lie; `"0xFF" == 255` evaluates to `true`.
 
 `pnot` is short for "PHP not". It would be nice to have prefix-`!` for this, but
 I don't think that's possible.
