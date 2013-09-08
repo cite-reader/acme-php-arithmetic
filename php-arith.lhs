@@ -74,6 +74,7 @@ Let's just get this over with:
 > toInt (PInt x) = PInt x
 > toInt (PFloat x) = PInt (truncate x)
 > toInt (PString x) = PInt undefined -- TODO
+> toInt (PNull) = PInt 0
 
 > toFloat :: PVal -> PVal
 > toFloat (PString x) = PFloat undefined -- TODO
@@ -86,6 +87,7 @@ Let's just get this over with:
 > toString (PInt x) = PString (pack . show $ x)
 > toString (PFloat x) = PString (pack . show $ x)
 > toString (PString x) = PString x
+> toString PNull = PString (pack "")
 
 `pnot` is short for "PHP not". It would be nice to have prefix-`!` for this, but
 I don't think that's possible.
