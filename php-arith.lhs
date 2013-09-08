@@ -115,6 +115,6 @@ at
 claims that "Valid numeric data is an optional sign, followed by one or more
 digits (optionally containing a decimal point), followed by an optional
 exponent. The exponent is an 'e' or 'E' followed by one or more digits." This
-is a lie; `"0xFF" == 255` evaluates to `true`.
-
-
+is a lie; `"0xFF" == 255` evaluates to `true`. *But,* by the way,
+`intval("0xFF") === 0` and `floatval("0xFF") === 0.0`. I don't even know how
+this is *possible.*
