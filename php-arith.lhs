@@ -39,7 +39,7 @@ into a single sum type:
 (Potential future work: define a custom `Show` instance that mimics the PHP
 `var_dump` function.)
 
-Let's start with the most basic of operations: equality testing. PHP has a
+Let's move on to the most basic of operations: equality testing. PHP has a
 notion of so-called "strict equality" using the operator `(===)`, which is easy
 enough to implement:
 
