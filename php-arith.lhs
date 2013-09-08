@@ -51,15 +51,25 @@ enough to implement:
 > PNull === PNull = PBool True
 > _ === _ = PBool False
 
+And, of course, its inverse:
+
 > (!==) :: PVal -> PVal -> PVal
 > a !== b = pnot (a === b)
 
-We'll get to `pnot` later.
+`pnot` is simply PHP's negation, "PHP not". It would be nice to have this as
+prefix-`!`, but I don't think that I can make Haskell do that.
 
-There's also loose eqality with the `==` operator. There's a table at
+> pnot :: PVal -> PVal
+> pnot (PBool b) = PBool (not b)
+> pnot b = pnot (toBool b)
+
+This uses `toBool`, which I will define in a moment. It coerces any `PVal` to
+the appropriate `PBool`.
+
+PHP also has "loose" eqality with the `==` operator. There's a table at
 <http://us2.php.net/manual/en/language.operators.comparison.php> which explains
 the rules. But wait... in order to implement this, we need type juggling first!
-Let's just get this over with:
+Let's just get this nonsense over with:
 
 > toBool :: PVal -> PVal
 > toBool (PBool x) = PBool x
@@ -107,9 +117,4 @@ digits (optionally containing a decimal point), followed by an optional
 exponent. The exponent is an 'e' or 'E' followed by one or more digits." This
 is a lie; `"0xFF" == 255` evaluates to `true`.
 
-`pnot` is short for "PHP not". It would be nice to have prefix-`!` for this, but
-I don't think that's possible.
 
-> pnot :: PVal -> PVal
-> pnot (PBool b) = PBool (not b)
-> pnot b = pnot (toBool b)
