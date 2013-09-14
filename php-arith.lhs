@@ -131,11 +131,11 @@ was not numeric, one for if it fits in a `long`, and one for when it's a double.
 No word on what happens when it doesn't fit in a double.
 
 It also uses a pair of output parameters to say what the actual numeric value
-is, but with a sufficiently-nice type system that becomes unnecessarry.
+is, but with a sufficiently-nice type system that becomes unnecessarry:
 
 > data Numberclass = Noclass | Longclass Int | Doubleclass Double
 
-(C's type system is actually *almost* nice here:
+(C's type system is actually *almost* nice here, if you let it be:
 
 ```C
 typedef enum { NOCLASS, LONGCLASS, DOUBLECLASS } numberclass;
@@ -144,3 +144,10 @@ typedef struct { numberclass class, number_u number } number_t;
 ```
 
 but don't tell anyone. We wouldn't want them to catch on.)
+
+I'm not sure what the algorithm is. The function spans 134 lines of
+Zend-flavored C, the author has no idea what loop invariants are for, and `goto`
+is used four times. I'm just going to leave it here for now.
+
+> isNumericString :: B.ByteString -> Numberclass
+> isNumericString = undefined -- Oh god why
