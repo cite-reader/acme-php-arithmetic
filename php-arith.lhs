@@ -34,7 +34,7 @@ With that available to us, we can roll the interesting subset of PHP values
 into a single sum type:
 
 > data PVal = PBool Bool | PInt Int | PFloat Double |
->             PString B.ByteString | PNull deriving (Show)
+>             PString B.ByteString | PNull deriving (Show, Read)
 
 (Potential future work: define a custom `Show` instance that mimics the PHP
 `var_dump` function.)
@@ -134,6 +134,7 @@ It also uses a pair of output parameters to say what the actual numeric value
 is, but with a sufficiently-nice type system that becomes unnecessarry:
 
 > data Numberclass = Noclass | Longclass Int | Doubleclass Double
+>   deriving (Show, Read, Eq)
 
 (C's type system is actually *almost* nice here, if you let it be:
 
