@@ -133,14 +133,14 @@ No word on what happens when it doesn't fit in a double.
 It also uses a pair of output parameters to say what the actual numeric value
 is, but with a sufficiently-nice type system that becomes unnecessarry.
 
-> data Numberkind = Nokind | Longkind Int | Doublekind Double
+> data Numberclass = Noclass | Longclass Int | Doubleclass Double
 
-(C's type system is actually nearly nice enough for this:
+(C's type system is actually *almost* nice here:
 
 ```C
-    typedef enum { NOKIND, LONGKIND, DOUBLEKIND } numberkind;
-    typedef union { long lng, double dbl } number_u;
-    typedef struct { numberkind kind, number_u number } number_t;
+typedef enum { NOCLASS, LONGCLASS, DOUBLECLASS } numberclass;
+typedef union { long lng, double dbl } number_u;
+typedef struct { numberclass class, number_u number } number_t;
 ```
 
 but don't tell anyone. We wouldn't want them to catch on.)
