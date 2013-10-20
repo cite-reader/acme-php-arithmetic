@@ -1,44 +1,49 @@
-There is an interesting meme going around, that there are some things that
-cannot be expressed in static languages.
+As those in the Haskell community may be aware, there is an `acme-php` package
+[available on Hackage][acme-php]. And I don't like it.
 
-To which I say: really? Perhaps in a language like Java you'd have to cheat the
-type system to express yourself, but Java does not provide a fine example of
-static typing. So what is the situation in a humane static language?
+Not because I'm a web dev offended that someone would poke fun at my favorite
+language. I *do* get paid to write PHP, but I hate every minute of it and will
+happily mock PHP until I run out of things to mock (I never will). I don't like
+`acme-php` because it's the *Scary Movie* of PHP mockery―a parody so shallow
+that it ceases to have the slightest resemblance to its inspiration. The
+thought process of whoever wrote it was apparently "PHP is dumb so I'm just
+going to throw all the dumb things I can think of into this library." Which is
+dissatisfying, because there are so very many *completely legitimate*
+complaints we can level at PHP without needing to make up our own.
 
-Let's find out.
+> module Acme.PHP where
 
-> module Acme.PHP.Arithmetic where
+So let's do this *right.*
 
-That's right. We're going to take the arithmetic semantics of PHP, the most
-insane of the dynlangs, and embed them in Haskell, the most aggressively pure
-static language in common use.
+* * *
 
-And I'm going to put it in the Acme namespace because *good God* this is a bad
-idea.
+I'm going to focus on the insanity of PHP's type system. As you may be aware,
+PHP is unityped: all values are of the same static type, and are only classified
+at runtime. PHP's interpreter refers to this single übertype as a `ZVal`; I
+will use that name to refer to the genuine article and `PVal` to refer to my
+own reimplementation.
 
+For the moment, I'll be ignoring PHP's arrays and object system. (Both are
+entirely deserving of a dissertation on their own; I just can't be bothered
+with the arrays right now. And I'm not sure I can embed the object system in
+Haskell anyway.) So this leaves booleans, integers, floats, strings and null.
 
-Let's start with types. We won't try to represent absolutely everything a PHP
-program could use, because then we would end up wandering into the object and
-resource systems; but we can emulate their booleans, integers, floats, and
-strings. Maybe if I still feel like doing this at the end I'll also implement
-their arrays.
+Yes, they have a null. Of *course* they have a null.
 
-Anyway, PHP strings are interesting. For reasons of history, these aren't
-Unicode codepoint sequences, but rather run-length-encoded byte arrays. So we
-need a couple imports (the second so we can later turn things into strings):
+Anyway, to simulate the strings in most modern, high-level languages you'd
+probaby import `Data.Text`. But, well. This is PHP. And in PHP, the atomic unit
+of strings is the byte.
 
 > import qualified Data.ByteString as B
 > import qualified Data.ByteString.Char8 as BC
 > import Data.ByteString.Char8 (pack)
 
-With that available to us, we can roll the interesting subset of PHP values
-into a single sum type:
+SO WE'RE OFF TO A FANTASTIC START. Here's a `PVal`:
 
 > data PVal = PBool !Bool | PInt !Int | PFloat !Double |
 >             PString !B.ByteString | PNull deriving (Show, Read)
 
-(Potential future work: define a custom `Show` instance that mimics the PHP
-`var_dump` function.)
+The derived `Show` and `Read` instances are for my own debugging use.
 
 Let's move on to the most basic of operations: equality testing. PHP has a
 notion of so-called "strict equality" using the operator `(===)`, which is easy
@@ -160,3 +165,5 @@ is used four times. I'm just going to leave it here for now.
 >   where
 >     goHex str = undefined
 >     goDec str = undefined
+
+[acme-php]: http://hackage.haskell.org/package/acme-php "acme-php on Hackage"
