@@ -28,6 +28,7 @@ Unicode codepoint sequences, but rather run-length-encoded byte arrays. So we
 need a couple imports (the second so we can later turn things into strings):
 
 > import qualified Data.ByteString as B
+> import qualified Data.ByteString.Char8 as BC
 > import Data.ByteString.Char8 (pack)
 
 With that available to us, we can roll the interesting subset of PHP values
@@ -139,9 +140,9 @@ is, but with a sufficiently-nice type system that becomes unnecessarry:
 (C's type system is actually *almost* nice here, if you let it be:
 
 ```C
-typedef enum { NOCLASS, LONGCLASS, DOUBLECLASS } numberclass;
+typedef enum { NOCLASS, LONGCLASS, DOUBLECLASS } numberclass_tag;
 typedef union { long lng, double dbl } number_u;
-typedef struct { numberclass class, number_u number } number_t;
+typedef struct { numberclass_tag class, number_u number } numberclass;
 ```
 
 but don't tell anyone. We wouldn't want them to catch on.)
@@ -151,4 +152,11 @@ Zend-flavored C, the author has no idea what loop invariants are for, and `goto`
 is used four times. I'm just going to leave it here for now.
 
 > isNumericString :: B.ByteString -> Numberclass
-> isNumericString = undefined -- Oh god why
+> isNumericString str | B.null str = Noclass
+>                     | otherwise =
+>   let str' = BC.dropWhile (`elem` " \t\n\r\v\f") str in
+>   if B.take 2 str' == pack "0x" then goHex (B.drop 2 str')
+>   else goDec str'
+>   where
+>     goHex str = undefined
+>     goDec str = undefined
