@@ -45,6 +45,50 @@ SO WE'RE OFF TO A FANTASTIC START. Here's a `PVal`:
 
 The derived `Show` and `Read` instances are for my own debugging use.
 
+With this type in hand, we can move on to the first true insanity in PHP's
+semantics: implicit type conversions.
+
+Oh. Sorry. I meant [type juggling][php-type-juggle]. And if you follow that link
+you might expect to see a specification of the rules for type juggling.
+Hell, that's what I expected the first time I saw the page. But you actually
+have to go chasing links in order to do it. And sometimes the documentation is
+lying to you, as we'll see.
+
+I've done all the link-chasing for you. Here's the rules:
+
+> toBool :: PVal -> PVal
+> toBool (PBool x) = PBool x
+> toBool (PInt x) = PBool (x /= 0)
+> toBool (PFloat x) = PBool (x /= 0.0)
+> toBool (PString x) = PBool (x /= (pack "") && x /= (pack "0"))
+> toBool PNull = PBool False
+
+That really is the rule for strings, by the way: `(bool) "0"` is `false`, but
+`(bool) "00"` is `true`. Okay, back to juggling:
+
+> toInt :: PVal -> PVal
+> toInt (PBool False) = PInt 0
+> toInt (PBool True) = PInt 1
+> toInt (PInt x) = PInt x
+> toInt (PFloat x) = PInt (truncate x)
+> toInt (PString x) = PInt undefined -- TODO
+> toInt (PNull) = PInt 0
+
+> toFloat :: PVal -> PVal
+> toFloat (PString x) = PFloat undefined -- TODO
+> toFloat (PInt x) = PFloat (fromIntegral x)
+> toFloat x = toFloat (toInt x)
+
+> toString :: PVal -> PVal
+> toString (PBool False) = PString (pack "") -- ORLY?
+> toString (PBool True) = PString (pack "1") -- YARLY
+> toString (PInt x) = PString (pack . show $ x)
+> toString (PFloat x) = PString (pack . show $ x)
+> toString (PString x) = PString x
+> toString PNull = PString (pack "")
+
+* * *
+
 Let's move on to the most basic of operations: equality testing. PHP has a
 notion of so-called "strict equality" using the operator `(===)`, which is easy
 enough to implement:
@@ -77,36 +121,6 @@ PHP also has "loose" eqality with the `==` operator. There's a table at
 the rules. But wait... in order to implement this, we need type juggling first!
 Let's just get this nonsense over with:
 
-> toBool :: PVal -> PVal
-> toBool (PBool x) = PBool x
-> toBool (PInt x) = PBool (x /= 0)
-> toBool (PFloat x) = PBool (x /= 0.0)
-> toBool (PString x) = PBool (x /= (pack "") && x /= (pack "0"))
-> toBool PNull = PBool False
-
-That really is the rule for strings, by the way: `(bool) "0"` is `false`, but
-`(bool) "00"` is `true`. Okay, back to juggling:
-
-> toInt :: PVal -> PVal
-> toInt (PBool False) = PInt 0
-> toInt (PBool True) = PInt 1
-> toInt (PInt x) = PInt x
-> toInt (PFloat x) = PInt (truncate x)
-> toInt (PString x) = PInt undefined -- TODO
-> toInt (PNull) = PInt 0
-
-> toFloat :: PVal -> PVal
-> toFloat (PString x) = PFloat undefined -- TODO
-> toFloat (PInt x) = PFloat (fromIntegral x)
-> toFloat x = toFloat (toInt x)
-
-> toString :: PVal -> PVal
-> toString (PBool False) = PString (pack "") -- ORLY?
-> toString (PBool True) = PString (pack "1") -- YARLY
-> toString (PInt x) = PString (pack . show $ x)
-> toString (PFloat x) = PString (pack . show $ x)
-> toString (PString x) = PString x
-> toString PNull = PString (pack "")
 
 Now that we can juggle types, are we ready to implement `(==)` for `PVal`s?
 Nope. Because when we're comparing two strings, we might have to juggle them
@@ -167,3 +181,4 @@ is used four times. I'm just going to leave it here for now.
 >     goDec str = undefined
 
 [acme-php]: http://hackage.haskell.org/package/acme-php "acme-php on Hackage"
+[php-type-juggle]: http://php.net/manual/en/language.types.type-juggling.php
