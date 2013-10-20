@@ -34,8 +34,8 @@ need a couple imports (the second so we can later turn things into strings):
 With that available to us, we can roll the interesting subset of PHP values
 into a single sum type:
 
-> data PVal = PBool Bool | PInt Int | PFloat Double |
->             PString B.ByteString | PNull deriving (Show, Read)
+> data PVal = PBool !Bool | PInt !Int | PFloat !Double |
+>             PString !B.ByteString | PNull deriving (Show, Read)
 
 (Potential future work: define a custom `Show` instance that mimics the PHP
 `var_dump` function.)
